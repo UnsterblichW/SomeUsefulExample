@@ -73,18 +73,21 @@ std::string convertIntegerPart(long long integerPart) {
 
     std::string result = "";
     int unitIndex = 0;
-    bool hasNonZeroInBigUnit = false;
+    bool needZero = false;
 
     while (integerPart > 0) {
         int fourDigits = integerPart % 10000;
         std::string fourDigitsStr = processFourDigits(fourDigits);
 
         if (!fourDigitsStr.empty()) {
+            if (needZero) {
+                result = numToChinese[0] + result;  // 只添加一个零
+            }
             result = fourDigitsStr + bigUnit[unitIndex] + result;
-            hasNonZeroInBigUnit = true;
-        } else if (hasNonZeroInBigUnit && integerPart > 9999) {
-            // 当前四位全为零，且前面有非零数字，添加"零"
-            result = numToChinese[0] + result;
+            needZero = false;
+        } else if (unitIndex > 0 && integerPart > 9999) {
+            // 当前四位全为零，且不是个位数，将在下一个非零数前加零
+            needZero = true;
         }
 
         integerPart /= 10000;
@@ -156,8 +159,8 @@ int main() {
     std::cout << "\n测试示例：" << std::endl;
 
     std::vector<double> testNumbers = {
-        // 120.00457, 34567.89, 100000000.123, 0.123456, 10020.003, -567.89
-        10020.003
+        120.00457, 234567.89, 100000001.123, 0.123456, 10020.003, -567.89
+        // 10020.003
     };
 
     for (double& num : testNumbers) {
